@@ -1,0 +1,35 @@
+########## For Scientific data code ################3
+library("readxl")
+library(descriptr)
+library(mice)
+library(xlsx2dfs)
+
+mydata <-read_excel('data name.xlsx')
+ 
+ds_screener(mydata)
+missdata <-  mydata[,-c(1,2,16,17,18,19)]
+plotd <- missdata
+md.pattern(plotd, plot = TRUE,rotate.names = T)#look the pattern of missing data
+imp1  <- mice(missdata, seed = 1234,Method = "logreg") 
+compleData <- complete(imp1,action = 1);
+mydata1 <- cbind(mydata[,c(1,2,16,17,18,19)],compleData)
+anyNA(mydata1)
+mydata1 <- mydata1[-14607,]
+
+##### normalization###
+data <- mydata1[,c(7:19)]
+# change the variables to numeric
+mydata <- data 
+for(j in 1:ncol(mydata)){
+  mydata[,j]<- as.numeric((unlist(mydata[,j])))
+}
+
+bp <- boxplot(data, outline = T)
+result1<-data
+for(i in 1:ncol(data)){ # 
+  df<-((data[,i]-min(data[,i]))/(max(data[,i])-min(data[,i])))
+  result1[,i]<-as.data.frame(df)
+}
+
+mydata <- cbind(mydata1[,c(1:6)],result1)
+#done
